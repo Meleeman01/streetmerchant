@@ -172,6 +172,7 @@ export type Model =
   | 'xlr8 uprising';
 
 export type Link = {
+  searchResultsPage?:boolean;
   brand: Brand;
   cartUrl?: string;
   itemNumber?: string;

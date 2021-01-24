@@ -41,6 +41,13 @@ export const Newegg: Store = {
         'https://www.newegg.com/western-digital-blue-500gb/p/N82E16820250087?Item=N82E16820250087',
     },
     {
+      searchResultsPage:true,
+      brand: 'test:brand',
+      model: 'test:model',
+      series: 'test:series',
+      url:'https://www.newegg.com/p/pl?N=100007709'
+    },
+    {
       brand: 'msi',
       cartUrl:
         'https://secure.newegg.com/Shopping/AddtoCart.aspx?Submit=ADD&ItemList=N82E16814137601',

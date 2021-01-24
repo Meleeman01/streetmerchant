@@ -157,6 +157,7 @@ async function lookup(browser: Browser, store: Store) {
   if (store.linksBuilder) {
     const lastRunTime = linkBuilderLastRunTimes[store.name] ?? -1;
     const ttl = store.linksBuilder.ttl ?? Number.MAX_SAFE_INTEGER;
+    //lastRunTime is to check the last time it was run so the page won't get rate limited.
     if (lastRunTime === -1 || Date.now() - lastRunTime > ttl) {
       logger.info(`[${store.name}] Running linksBuilder...`);
       try {
@@ -167,6 +168,8 @@ async function lookup(browser: Browser, store: Store) {
       }
     }
   }
+
+  
 
   /* eslint-disable no-await-in-loop */
   for (const link of store.links) {
@@ -192,7 +195,59 @@ async function lookup(browser: Browser, store: Store) {
 
     page.setDefaultNavigationTimeout(config.page.timeout);
     await page.setUserAgent(await getRandomUserAgent());
+    
+    if (link.searchResultsPage) {
+      // For Newegg exclusively
 
+      //checks context, should be refactored to a function probs.
+      const customContext = config.browser.isIncognito;
+      const context = customContext
+      ? await browser.createIncognitoBrowserContext()
+      : browser.defaultBrowserContext();
+
+      const page = await context.newPage();
+      page.setDefaultNavigationTimeout(config.page.timeout);
+      await page.goto(link.url);
+      
+        const pageResults = [];
+
+          const children = await page.evaluate((selector) => {
+            const names = [];
+            let elements:any = document.querySelectorAll(selector);
+            for (const element of elements) {
+              let n = []
+              for (const el of element.children){
+                n.push(el.tagName);
+              }
+              names.push(n);
+            }
+            return names;
+        }, '.item-info');
+
+        const status = []
+        for(const child in children) {
+          if (children[child].length == 4) {
+            status.push('OUT OF STOCK');
+          }
+          else status.push('IN STOCK!');
+        }
+
+        const titles = await page.$$eval('.item-title', elements => elements.map(element => element.textContent));
+        const prices = await page.$$eval('.price-current', elements => elements.map(element => element.textContent));
+
+        //assemble the information together for console output
+        for (const title in titles) {
+          const card = [];
+          card.push(titles[title]);
+          card.push(prices[title]);
+          card.push(status[title]);
+          pageResults.push(card);
+        }
+        console.info(pageResults);
+      
+        logger.info(link.url);
+
+    }
     let adBlockRequestHandler: any;
     let pageProxy;
     if (useAdBlock) {
