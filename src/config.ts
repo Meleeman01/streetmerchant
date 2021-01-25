@@ -432,7 +432,7 @@ const store = {
       proxyList,
     };
   }),
-  searchResults: envOrBoolean(process.env.SEARCH_RESULTS_NEWEGG , false)
+  searchResults: envOrBoolean(process.env.SEARCH_RESULTS_NEWEGG , false),
 };
 
 export const defaultStoreData = {
